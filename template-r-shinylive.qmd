@@ -155,13 +155,6 @@ ui <- fluidPage(
                   choices = c("All", penguins_species),
                   selected = "All")
       
-      # selectInput(
-      #   inputId = "date",
-      #   label = NULL,
-      #   choices = mydate,
-      #   selectize = FALSE,
-      #   size = 3
-      # )
     ),
     
     # Show a plot of the generated distribution
@@ -258,14 +251,6 @@ ui <- fluidPage(
       selectInput("species", "Species:",
                   choices = c("All", penguins_species),
                   selected = "All")
-      
-      # selectInput(
-      #   inputId = "date",
-      #   label = NULL,
-      #   choices = mydate,
-      #   selectize = FALSE,
-      #   size = 3
-      # )
     ),
     
     # Show a plot of the generated distribution

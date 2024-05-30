@@ -44,6 +44,7 @@ jobs:
             any::lubridate
             any::janitor
             any::stringr
+            any::cansim
 
       # Back to our regularly scheduled Quarto output
       - name: "Set up Quarto"
