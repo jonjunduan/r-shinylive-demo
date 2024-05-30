@@ -11,11 +11,11 @@ website:
   navbar:
     search: false
     left:
-      - text: "BC Retial and Trade App"
+      - text: "BC Retial and Trade App (Home)"
         file: bc-retail-r-shinylive.qmd
       - text: "Skeletal Template"
         file: template-r-shinylive.qmd
-      - text: "Tutorial (Home)"
+      - text: "Tutorial"
         file: index.qmd
 
 

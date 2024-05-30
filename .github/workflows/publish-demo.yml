@@ -39,6 +39,9 @@ jobs:
             any::rmarkdown
             any::downlit
             any::xml2
+            any::dplyr
+            any::readr
+            any::lubridate
 
       # Back to our regularly scheduled Quarto output
       - name: "Set up Quarto"
