@@ -13,7 +13,7 @@ Please switch `{{shinylive-r}}` to `{shinylive-r}`. We've suppressed this exampl
 
 It is difficult to load data like csv file to shinylive. The only way that works is that load from website and put code chunk into quarto document, so when render the file, it loads the data. 
 
-```{r, results='hide', echo=FALSE, message=FALSE, warning=FALSE}
+```{r, loaddata, results='hide', echo=FALSE, message=FALSE, warning=FALSE}
 #| context: setup
 
 library(dplyr)

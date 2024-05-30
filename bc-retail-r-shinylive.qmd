@@ -113,15 +113,30 @@ latestDate <- provinces %>% summarise(date = max(ref_date)) %>%
 
 ```{shinylive-r}
 #| standalone: true
-#| viewerHeight: 1200
+#| viewerHeight: 1800
+
 library(shiny)
 library(ggplot2)
-data_url = "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv"
-# data_url = "https://github.com/jonjunduan/r-shinylive-demo/blob/main/data/provinces.csv
-# data_url = "penguins.csv"
-# data_url = "c:/Users/JDUAN/Downloads/project/r/shinylive/test-csv/penguins.csv"
-penguins = read.csv(data_url)
-penguins_species = as.character(unique(penguins$species))
+library(dplyr)
+library(stringr)
+library(lubridate)
+
+# data_url = "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv"
+data_url = "https://raw.githubusercontent.com/jonjunduan/r-shinylive-demo/main/data/provinces.csv"
+provinces = read.csv(data_url)
+
+mydate <- provinces %>%
+  filter(as.Date(ref_date) %in% as.Date(c((max(as.Date(ref_date)) - lubridate::years(1)):max(as.Date(ref_date))))) %>%
+  select(ref_date) %>%
+  unique() %>%
+  arrange(desc(ref_date)) %>%
+  pull()
+
+
+mygeos <- provinces %>%
+  select(geo) %>%
+  unique() %>%
+  pull()
 
 bcstats_chart_theme <-
   theme_bw() +
@@ -140,31 +155,38 @@ bcstats_chart_theme <-
 
 #Define UI
 ui <- fluidPage(
-  # tableOutput("table")
   
   # Application title
-  titlePanel("Palmer Penguins Data"),
+  titlePanel("BC Retail and Trade"),
   
   # Sidebar with a slider input for selecting species
   sidebarLayout(
     sidebarPanel(
-      selectInput("species", "Species:",
-                  choices = c("All", penguins_species),
-                  selected = "All")
       
-      # selectInput(
-      #   inputId = "date",
-      #   label = NULL,
-      #   choices = mydate,
-      #   selectize = FALSE,
-      #   size = 3
-      # )
+      selectInput(
+        inputId = "date",
+        label = NULL,
+        choices = mydate,
+        selectize = FALSE,
+        size = 3
+      ),
+      
+      selectInput(
+        inputId = "geo",
+        label = NULL,
+        choices = mygeos,
+        selected = "British Columbia"
+      )
+      
     ),
     
     # Show a plot of the generated distribution
     mainPanel(
-      plotOutput("penguinPlot"),
-      tableOutput("penguinsTable")
+      
+      plotOutput("provinceBarPlot"),
+      tableOutput("provinceBarTable"),
+      plotOutput("provinceLinePlot"),
+      tableOutput("provinceLineTable")
     )
   )
   
@@ -172,32 +194,75 @@ ui <- fluidPage(
 
 server <- function(input, output, session){
   
-  data = reactive({
-    # # Filter data based on species selection
-    if (input$species == "All") {
-      data <- penguins
-    } else {
-      data <- penguins[penguins$species == input$species, ]
-    }
+  get_province_bar_data = reactive({
+    prov_bar_chart <- provinces %>%
+      filter(ref_date == input$date) %>%
+      mutate(order = case_when(geo == "British Columbia" ~ 1,
+                               geo == "Canada" ~ 2,
+                               TRUE ~ rank(desc(mom_pct)) + 2),
+             geo = str_replace_all(geo, " ", "\n")) %>%
+      arrange(order) %>%
+      mutate(geo = factor(geo, levels = geo))
     
-    data
+    prov_bar_chart
     
   })
   
-  output$penguinsTable <- renderTable({data()[1:10,]})
-  output$penguinPlot <- renderPlot({
+  output$provinceBarTable <- renderTable({get_province_bar_data()[1:10,]})
+  
+  output$provinceBarPlot <- renderPlot({
     
-    
-    #
-    # # Create ggplot
-    ggplot(data(), aes(x = bill_length_mm, y = body_mass_g)) +
-      geom_point(aes(color = species)) +
-      labs(title = "Flipper Length vs Body Mass",
-           x = "Bill Length (mm)",
-           y = "Body Mass (g)") +
+    p <- ggplot(get_province_bar_data(),
+                aes(x = geo, y = mom_pct)) +
+      geom_bar(stat = "identity") +
+      geom_hline(yintercept = 0) +
+      geom_vline(xintercept = 2.5) +
+      labs(x = NULL,
+           y = "% Change",
+           title = "By Province") +
       bcstats_chart_theme
     
+    print(p)
   })
+  
+  
+  get_province_line_data = reactive({
+    
+    prov_line_chart <- provinces %>%
+      filter(geo == input$geo) %>%
+      mutate(value = value/1000000) %>% 
+      mutate(ref_date = as.Date(ref_date))
+    
+    prov_line_chart
+    
+  })
+  
+  output$provinceLineTable <- renderTable({get_province_line_data()[1:10,]})
+  
+  
+  
+  
+  output$provinceLinePlot <- renderPlot({
+    
+    p <- ggplot(get_province_line_data(),
+                aes(x = ref_date, y = value)) +
+      geom_line() +
+      labs(x = NULL,
+           y = "Billions of Dollars",
+           title = paste("For",input$geo)) +
+      bcstats_chart_theme +
+      scale_x_date(
+        limits = c(max(as.Date(get_province_line_data()$ref_date)) - years(5),
+                              max(as.Date(get_province_line_data()$ref_date)) + months(3)),
+                   expand = c(0,0),
+                   date_breaks = "6 months",
+                   date_labels = "%b\n%Y" )
+    
+    print(p)
+  })
+  
+  
+  
 }
 
 shinyApp(ui, server)
@@ -221,11 +286,26 @@ filters:
 
 library(shiny)
 library(ggplot2)
-data_url = "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv"
-# data_url = "penguins.csv"
-# data_url = "c:/Users/JDUAN/Downloads/project/r/shinylive/test-csv/penguins.csv"
-penguins = read.csv(data_url)
-penguins_species = as.character(unique(penguins$species))
+library(dplyr)
+library(stringr)
+library(lubridate)
+
+# data_url = "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv"
+data_url = "https://raw.githubusercontent.com/jonjunduan/r-shinylive-demo/main/data/provinces.csv"
+provinces = read.csv(data_url)
+
+mydate <- provinces %>%
+  filter(as.Date(ref_date) %in% as.Date(c((max(as.Date(ref_date)) - lubridate::years(1)):max(as.Date(ref_date))))) %>%
+  select(ref_date) %>%
+  unique() %>%
+  arrange(desc(ref_date)) %>%
+  pull()
+
+
+mygeos <- provinces %>%
+  select(geo) %>%
+  unique() %>%
+  pull()
 
 bcstats_chart_theme <-
   theme_bw() +
@@ -244,31 +324,38 @@ bcstats_chart_theme <-
 
 #Define UI
 ui <- fluidPage(
-  # tableOutput("table")
   
   # Application title
-  titlePanel("Palmer Penguins Data"),
+  titlePanel("BC Retail and Trade"),
   
   # Sidebar with a slider input for selecting species
   sidebarLayout(
     sidebarPanel(
-      selectInput("species", "Species:",
-                  choices = c("All", penguins_species),
-                  selected = "All")
       
-      # selectInput(
-      #   inputId = "date",
-      #   label = NULL,
-      #   choices = mydate,
-      #   selectize = FALSE,
-      #   size = 3
-      # )
+      selectInput(
+        inputId = "date",
+        label = NULL,
+        choices = mydate,
+        selectize = FALSE,
+        size = 3
+      ),
+      
+      selectInput(
+        inputId = "geo",
+        label = NULL,
+        choices = mygeos,
+        selected = "British Columbia"
+      )
+      
     ),
     
     # Show a plot of the generated distribution
     mainPanel(
-      plotOutput("penguinPlot"),
-      tableOutput("penguinsTable")
+      
+      plotOutput("provinceBarPlot"),
+      tableOutput("provinceBarTable"),
+      plotOutput("provinceLinePlot"),
+      tableOutput("provinceLineTable")
     )
   )
   
@@ -276,32 +363,75 @@ ui <- fluidPage(
 
 server <- function(input, output, session){
   
-  data = reactive({
-    # # Filter data based on species selection
-    if (input$species == "All") {
-      data <- penguins
-    } else {
-      data <- penguins[penguins$species == input$species, ]
-    }
+  get_province_bar_data = reactive({
+    prov_bar_chart <- provinces %>%
+      filter(ref_date == input$date) %>%
+      mutate(order = case_when(geo == "British Columbia" ~ 1,
+                               geo == "Canada" ~ 2,
+                               TRUE ~ rank(desc(mom_pct)) + 2),
+             geo = str_replace_all(geo, " ", "\n")) %>%
+      arrange(order) %>%
+      mutate(geo = factor(geo, levels = geo))
     
-    data
+    prov_bar_chart
     
   })
   
-  output$penguinsTable <- renderTable({data()[1:10,]})
-  output$penguinPlot <- renderPlot({
+  output$provinceBarTable <- renderTable({get_province_bar_data()[1:10,]})
+  
+  output$provinceBarPlot <- renderPlot({
     
-    
-    #
-    # # Create ggplot
-    ggplot(data(), aes(x = bill_length_mm, y = body_mass_g)) +
-      geom_point(aes(color = species)) +
-      labs(title = "Flipper Length vs Body Mass",
-           x = "Bill Length (mm)",
-           y = "Body Mass (g)") +
+    p <- ggplot(get_province_bar_data(),
+                aes(x = geo, y = mom_pct)) +
+      geom_bar(stat = "identity") +
+      geom_hline(yintercept = 0) +
+      geom_vline(xintercept = 2.5) +
+      labs(x = NULL,
+           y = "% Change",
+           title = "By Province") +
       bcstats_chart_theme
     
+    print(p)
   })
+  
+  
+  get_province_line_data = reactive({
+    
+    prov_line_chart <- provinces %>%
+      filter(geo == input$geo) %>%
+      mutate(value = value/1000000) %>% 
+      mutate(ref_date = as.Date(ref_date))
+    
+    prov_line_chart
+    
+  })
+  
+  output$provinceLineTable <- renderTable({get_province_line_data()[1:10,]})
+  
+  
+  
+  
+  output$provinceLinePlot <- renderPlot({
+    
+    p <- ggplot(get_province_line_data(),
+                aes(x = ref_date, y = value)) +
+      geom_line() +
+      labs(x = NULL,
+           y = "Billions of Dollars",
+           title = paste("For",input$geo)) +
+      bcstats_chart_theme +
+      scale_x_date(
+        limits = c(max(as.Date(get_province_line_data()$ref_date)) - years(5),
+                              max(as.Date(get_province_line_data()$ref_date)) + months(3)),
+                   expand = c(0,0),
+                   date_breaks = "6 months",
+                   date_labels = "%b\n%Y" )
+    
+    print(p)
+  })
+  
+  
+  
 }
 
 shinyApp(ui, server)
