@@ -13,12 +13,13 @@ Please switch `{{shinylive-r}}` to `{shinylive-r}`. We've suppressed this exampl
 
 It is difficult to load data like csv file to shinylive. The only way that works is that load from website and put code chunk into quarto document, so when render the file, it loads the data. 
 
-```{r, results='hide', echo=FALSE, message=FALSE, warning=FALSE}
+```{r, loaddata ,results='hide', echo=FALSE, message=FALSE, warning=FALSE}
 #| context: setup
 
 library(dplyr)
 library(readr)
 library(lubridate)
+
 # functions ----
 
 get_mom_stats <- function(df) {
@@ -73,7 +74,7 @@ provinces <- cansim::get_cansim_vector_for_latest_periods(vectors = c("v14468594
                                                                       "v1446859605", "v1446859636", "v1446859667",
                                                                       "v1446859789", "v1446859881", "v1446859942",
                                                                       "v1446859973", "v1446860064"), periods = 61) %>%
-  mutate(REF_DATE = ymd(REF_DATE, truncated = 2)) %>%
+  mutate(REF_DATE = lubridate::ymd(REF_DATE, truncated = 2)) %>%
   janitor::clean_names() %>%
   left_join(province_names, by = c("vector")) %>%
   group_by(geo) %>%
@@ -89,13 +90,14 @@ sectors <- cansim::get_cansim_vector_for_latest_periods(vectors = c("v1446860063
                                                                     "v1446860091", "v1446860083",
                                                                     "v1446860092"),
                                                        periods = 61) %>%
-  mutate(REF_DATE = ymd(REF_DATE, truncated = 2)) %>%
+  mutate(REF_DATE = lubridate::ymd(REF_DATE, truncated = 2)) %>%
   janitor::clean_names() %>%
   left_join(sector_names, by = c("vector")) %>%
   group_by(vector) %>%
   get_yoy_stats() %>%
   ungroup() %>%
   select(ref_date, sector, value, yoy_pct)
+
 sectors %>% write_csv("data/sectors.csv")
 # sectors = read_csv("data/sectors.csv")
 
@@ -103,12 +105,7 @@ latestDate <- provinces %>% summarise(date = max(ref_date)) %>%
   mutate(date = paste(month(date, label = TRUE, abbr = TRUE), year(date), sep = " ")) %>%
   pull()
 
-# data <- read.csv2("https://archive.ics.uci.edu/ml/machine-learning-databases/wine-quality/winequality-red.csv")
-# data_url = "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv"
-# penguins = readr::read_csv()
-# penguins = read.csv(data_url)
-# penguins_species = as.character(unique(penguins$species))
-# print(penguins_species)
+
 ```
 
 
