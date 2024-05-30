@@ -16,7 +16,7 @@ It is difficult to load data like csv file to shinylive. The only way that works
 
 ```{shinylive-r}
 #| standalone: true
-
+#| viewerHeight: 1200
 library(shiny)
 library(ggplot2)
 data_url = "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv"
