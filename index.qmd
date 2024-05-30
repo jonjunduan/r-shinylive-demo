@@ -1,173 +1,455 @@
 ---
-title: "R-shinylive app in Quarto!"
+title: "Canada Retail Sale r-shinylive Quarto document"
 format:
   html:
-    grid: 
-      body-width: 1300px
     resources: 
       - shinylive-sw.js
 filters:
   - shinylive
 ---
 
-Interested in deploying a Shiny application for R within Quarto without a server? Check out:
+:::callout-important
+Please switch `{{shinylive-r}}` to `{shinylive-r}`. We've suppressed this example from running by using `{{}}`.
 
-<https://github.com/coatless-quarto/r-shinylive-demo>
+It is difficult to load data like csv file to shinylive. The only way that works is that load from website and put code chunk into quarto document, so when render the file, it loads the data. 
 
-For the demo, we're showing the source code used in Joe Cheng's [posit::conf(2023) demo](https://jcheng5.github.io/posit-conf-2023-shinylive/#/option-3-include-1) (Warning: Large file size, don't open on mobile!) [[Source Code](https://github.com/jcheng5/posit-conf-2023-shinylive/blob/d385ad18eb0d867f25cc4721d9e8c25aeb2dfb90/slides.qmd#L299)]
+```{r, loaddata ,results='hide', echo=FALSE, message=FALSE, warning=FALSE}
+#| context: setup
+# 
+# library(dplyr)
+# library(readr)
+# library(lubridate)
+# 
+# # functions ----
+# 
+# get_mom_stats <- function(df) {
+# 
+#   df %>%
+#     arrange(ref_date) %>%
+#     mutate(mom_val = lag(value),
+#            mom_pct = ((value / lag(value, n = 1)) - 1) * 100,
+#            mom_chg = (value - lag(value, n = 1)))
+# }
+# 
+# get_yoy_stats <- function(df) {
+# 
+#   df %>%
+#     arrange(ref_date) %>%
+#     mutate(yoy_val = lag(value, n = 12),
+#            yoy_pct = ((value / lag(value, n = 12)) - 1) * 100,
+#            yoy_chg = (value - lag(value, n = 12)))
+# }
+# 
+# ## static vector names ----
+# province_names <- data.frame(
+#   geo = c("Canada", "Newfoundland and Labrador", "Prince Edward Island", "Nova Scotia", "New Brunswick",
+#           "Quebec", "Ontario", "Manitoba", "Saskatchewan", "Alberta",  "British Columbia"),
+#   vector = c("v1446859483", "v1446859543", "v1446859574", "v1446859605", "v1446859636",
+#              "v1446859667", "v1446859789", "v1446859881", "v1446859942", "v1446859973", "v1446860064"))
+# 
+# sector_names <-   data.frame(
+#   sector = c("All Retail Trade",
+#              "Motor vehicle and parts dealers",
+#              "Furniture, home furnishings stores, electronics and appliances retailers",
+#              "Building material and garden equipment and supplies dealers",
+#              "Food and beverage retailers",
+#              "Health and personal care retailers",
+#              "Gasoline stations and fuel vendors",
+#              "Clothing and clothing accessories retailers",
+#              "Sporting goods, hobby, musical instrument, book retailers and news dealers",
+#              "General merchandise retailers",
+#              "Miscellaneous retailers"),
+#   vector = c("v1446860063", "v1446860065", "v1446860078", "v1446860071", "v1446860072", "v1446860084",
+#              "v1446860085", "v1446860087", "v1446860091", "v1446860083", "v1446860092"))
+# 
+# ## chart theme/functions ----
+# # source("scripts/chart_theme.R")
+# # source("scripts/functions.R")
+# 
+# 
+# 
+# 
+# ## get cansim data ----
+# provinces <- cansim::get_cansim_vector_for_latest_periods(vectors = c("v1446859483", "v1446859543", "v1446859574",
+#                                                                       "v1446859605", "v1446859636", "v1446859667",
+#                                                                       "v1446859789", "v1446859881", "v1446859942",
+#                                                                       "v1446859973", "v1446860064"), periods = 61) %>%
+#   mutate(REF_DATE = lubridate::ymd(REF_DATE, truncated = 2)) %>%
+#   janitor::clean_names() %>%
+#   left_join(province_names, by = c("vector")) %>%
+#   group_by(geo) %>%
+#   get_mom_stats() %>%
+#   ungroup() %>%
+#   select(ref_date, geo, value, mom_pct)
+# provinces %>% write_csv("data/provinces.csv")
+# # provinces = read_csv("data/provinces.csv")
+# sectors <- cansim::get_cansim_vector_for_latest_periods(vectors = c("v1446860063", "v1446860065",
+#                                                                     "v1446860078", "v1446860071",
+#                                                                     "v1446860072", "v1446860084",
+#                                                                     "v1446860085", "v1446860087",
+#                                                                     "v1446860091", "v1446860083",
+#                                                                     "v1446860092"),
+#                                                        periods = 61) %>%
+#   mutate(REF_DATE = lubridate::ymd(REF_DATE, truncated = 2)) %>%
+#   janitor::clean_names() %>%
+#   left_join(sector_names, by = c("vector")) %>%
+#   group_by(vector) %>%
+#   get_yoy_stats() %>%
+#   ungroup() %>%
+#   select(ref_date, sector, value, yoy_pct)
+# 
+# sectors %>% write_csv("data/sectors.csv")
+# # sectors = read_csv("data/sectors.csv")
+# 
+# latestDate <- provinces %>% summarise(date = max(ref_date)) %>%
+#   mutate(date = paste(month(date, label = TRUE, abbr = TRUE), year(date), sep = " ")) %>%
+#   pull()
 
 
-### Updates
+```
 
-- **4/25/2025**
-  - We've switched the GitHub Pages to use GitHub Actions to 
-    deploy the website instead of commiting into the GitHub Pages branch.
-  - We've also pinned the version of `shinylive` being used to v0.1.1 to ensure
-    consistency with the `quarto-ext/shinylive` Quarto extension.
-- **10/26/2023**
-  - We've updated the version of `shinylive` being used to v0.1.0 to ensure
-    consistency with the `quarto-ext/shinylive` Quarto extension.
-  - Ensured that `bslib` was loaded for the `page_sidebar()` function.
-- **09/21/2023**
-  - Initial release of the tutorial.
 
-## Sample Application 
-
-We'll be walking through the process of creating the following R Shinylive application. Please be aware that it may take some time to load.
+:::
 
 ```{shinylive-r}
 #| standalone: true
-#| viewerHeight: 600
-library(shiny)
-library(bslib)
+#| viewerHeight: 900
 
-# Define UI for app that draws a histogram ----
-ui <- page_sidebar(
-  sidebar = sidebar(open = "open",
-    numericInput("n", "Sample count", 100),
-    checkboxInput("pause", "Pause", FALSE),
-  ),
-  plotOutput("plot", width=1100)
+library(shiny)
+library(ggplot2)
+library(dplyr)
+library(stringr)
+library(lubridate)
+
+# data_url = "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv"
+data_url = "https://raw.githubusercontent.com/jonjunduan/r-shinylive-demo/main/data/provinces.csv"
+provinces = read.csv(data_url)
+
+mydate <- provinces %>%
+  filter(as.Date(ref_date) %in% as.Date(c((max(as.Date(ref_date)) - lubridate::years(1)):max(as.Date(ref_date))))) %>%
+  select(ref_date) %>%
+  unique() %>%
+  arrange(desc(ref_date)) %>%
+  pull()
+
+
+mygeos <- provinces %>%
+  select(geo) %>%
+  unique() %>%
+  pull()
+
+bcstats_chart_theme <-
+  theme_bw() +
+  theme(
+    panel.border = element_rect(colour="white"),
+    plot.title = element_text(face="bold"),
+    legend.position=c(1,0),
+    legend.justification=c(1,0),
+    legend.title = element_text(size=12),
+    legend.text = element_text(size=11),
+    axis.line = element_line(colour="black"),
+    axis.title = element_text(size=12),
+    axis.text = element_text(size=10)
+  )
+
+
+#Define UI
+ui <- fluidPage(
+  
+  # Application title
+  titlePanel("BC Retail and Trade"),
+  
+  # Sidebar with a slider input for selecting species
+  sidebarLayout(
+    sidebarPanel(
+      
+      selectInput(
+        inputId = "date",
+        label = NULL,
+        choices = mydate,
+        selectize = FALSE,
+        size = 3
+      ),
+      
+      # selectInput(
+      #   inputId = "geo",
+      #   label = NULL,
+      #   choices = mygeos,
+      #   selected = "British Columbia"
+      # )
+      
+    ),
+    
+    # Show a plot of the generated distribution
+    mainPanel(
+      
+      plotOutput("provinceBarPlot"),
+      tableOutput("provinceBarTable"),
+      # plotOutput("provinceLinePlot"),
+      # tableOutput("provinceLineTable")
+    )
+  )
+  
 )
 
-server <- function(input, output, session) {
-  data <- reactive({
-    input$resample
-    if (!isTRUE(input$pause)) {
-      invalidateLater(1000)
-    }
-    rnorm(input$n)
+server <- function(input, output, session){
+  
+  get_province_bar_data = reactive({
+    prov_bar_chart <- provinces %>%
+      filter(ref_date == input$date) %>%
+      mutate(order = case_when(geo == "British Columbia" ~ 1,
+                               geo == "Canada" ~ 2,
+                               TRUE ~ rank(desc(mom_pct)) + 2),
+             geo = str_replace_all(geo, " ", "\n")) %>%
+      arrange(order) %>%
+      mutate(geo = factor(geo, levels = geo))
+    
+    prov_bar_chart
+    
   })
   
-  output$plot <- renderPlot({
-    hist(data(),
-      breaks = 40,
-      xlim = c(-2, 2),
-      ylim = c(0, 1),
-      lty = "blank",
-      xlab = "value",
-      freq = FALSE,
-      main = ""
-    )
+  output$provinceBarTable <- renderTable({get_province_bar_data()[1:10,]})
+  
+  output$provinceBarPlot <- renderPlot({
     
-    x <- seq(from = -2, to = 2, length.out = 500)
-    y <- dnorm(x)
-    lines(x, y, lwd=1.5)
+    p <- ggplot(get_province_bar_data(),
+                aes(x = geo, y = mom_pct)) +
+      geom_bar(stat = "identity") +
+      geom_hline(yintercept = 0) +
+      geom_vline(xintercept = 2.5) +
+      labs(x = NULL,
+           y = "% Change",
+           title = "By Province") +
+      bcstats_chart_theme
     
-    lwd <- 5
-    abline(v=0, col="red", lwd=lwd, lty=2)
-    abline(v=mean(data()), col="blue", lwd=lwd, lty=1)
-
-    legend(legend = c("Normal", "Mean", "Sample mean"),
-      col = c("black", "red", "blue"),
-      lty = c(1, 2, 1),
-      lwd = c(1, lwd, lwd),
-      x = 1,
-      y = 0.9
-    )
-  }, res=140)
+    print(p)
+  })
+  
+  
+  # get_province_line_data = reactive({
+  #   
+  #   prov_line_chart <- provinces %>%
+  #     filter(geo == input$geo) %>%
+  #     mutate(value = value/1000000) %>% 
+  #     mutate(ref_date = as.Date(ref_date))
+  #   
+  #   prov_line_chart
+  #   
+  # })
+  
+  # output$provinceLineTable <- renderTable({get_province_line_data()[1:10,]})
+  # 
+  # 
+  # 
+  # 
+  # output$provinceLinePlot <- renderPlot({
+  #   
+  #   p <- ggplot(get_province_line_data(),
+  #               aes(x = ref_date, y = value)) +
+  #     geom_line() +
+  #     labs(x = NULL,
+  #          y = "Billions of Dollars",
+  #          title = paste("For",input$geo)) +
+  #     bcstats_chart_theme +
+  #     scale_x_date(
+  #       limits = c(max(as.Date(get_province_line_data()$ref_date)) - years(5),
+  #                             max(as.Date(get_province_line_data()$ref_date)) + months(3)),
+  #                  expand = c(0,0),
+  #                  date_breaks = "6 months",
+  #                  date_labels = "%b\n%Y" )
+  #   
+  #   print(p)
+  # })
+  # 
+  
+  
 }
 
-# Create Shiny app ----
-shinyApp(ui = ui, server = server)
+shinyApp(ui, server)
 ```
 
-## Video Tutorial
 
-Prefer a hands-on visual guide? Check out the following YouTube video:
 
-[![Creating a Serverless Shiny App using Quarto with R Shinylive](https://img.youtube.com/vi/6y2FnAugP8E/0.jpg)](https://www.youtube.com/watch?v=6y2FnAugP8E)
 
-We'll go through every step and provide some commentary along the way!
 
-# Using r-shinylive for Serverless Shiny Apps in Quarto Documents
 
-Are you interested in creating your own Quarto document with embedded static Shiny apps? This tutorial will guide you through the process of using the `r-shinylive` R package to achieve just that. Let's get started!
 
-## Installation
-
-**Step 1:** Install the `r-shinylive` R package from CRAN. It can be obtained from the R console using the following command:
-
-```r
-install.packages("shinylive")
-```
-
-:::{.callout-note}
-This step differs from when the tutorial and video were written as the 
-`shinylive` package was only able to be obtained from GitHub.
 :::
 
-## Setting Up Your Quarto Project
+```{shinylive-r}
+#| standalone: true
+#| viewerHeight: 900
 
-**Step 2:** Create a new Quarto project. Open your terminal and execute the following command:
+library(shiny)
+library(ggplot2)
+library(dplyr)
+library(stringr)
+library(lubridate)
 
-```sh
-quarto create project default
+# data_url = "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv"
+data_url = "https://raw.githubusercontent.com/jonjunduan/r-shinylive-demo/main/data/provinces.csv"
+provinces = read.csv(data_url)
+
+mydate <- provinces %>%
+  filter(as.Date(ref_date) %in% as.Date(c((max(as.Date(ref_date)) - lubridate::years(1)):max(as.Date(ref_date))))) %>%
+  select(ref_date) %>%
+  unique() %>%
+  arrange(desc(ref_date)) %>%
+  pull()
+
+
+mygeos <- provinces %>%
+  select(geo) %>%
+  unique() %>%
+  pull()
+
+bcstats_chart_theme <-
+  theme_bw() +
+  theme(
+    panel.border = element_rect(colour="white"),
+    plot.title = element_text(face="bold"),
+    legend.position=c(1,0),
+    legend.justification=c(1,0),
+    legend.title = element_text(size=12),
+    legend.text = element_text(size=11),
+    axis.line = element_line(colour="black"),
+    axis.title = element_text(size=12),
+    axis.text = element_text(size=10)
+  )
+
+
+#Define UI
+ui <- fluidPage(
+  
+  # Application title
+  titlePanel("BC Retail and Trade"),
+  
+  # Sidebar with a slider input for selecting species
+  sidebarLayout(
+    sidebarPanel(
+      
+      # selectInput(
+      #   inputId = "date",
+      #   label = NULL,
+      #   choices = mydate,
+      #   selectize = FALSE,
+      #   size = 3
+      # ),
+      
+      selectInput(
+        inputId = "geo",
+        label = NULL,
+        choices = mygeos,
+        selected = "British Columbia"
+      )
+      
+    ),
+    
+    # Show a plot of the generated distribution
+    mainPanel(
+      
+      # plotOutput("provinceBarPlot"),
+      # tableOutput("provinceBarTable"),
+      plotOutput("provinceLinePlot"),
+      tableOutput("provinceLineTable")
+    )
+  )
+  
+)
+
+server <- function(input, output, session){
+  
+  get_province_bar_data = reactive({
+    prov_bar_chart <- provinces %>%
+      filter(ref_date == input$date) %>%
+      mutate(order = case_when(geo == "British Columbia" ~ 1,
+                               geo == "Canada" ~ 2,
+                               TRUE ~ rank(desc(mom_pct)) + 2),
+             geo = str_replace_all(geo, " ", "\n")) %>%
+      arrange(order) %>%
+      mutate(geo = factor(geo, levels = geo))
+    
+    prov_bar_chart
+    
+  })
+  
+  # output$provinceBarTable <- renderTable({get_province_bar_data()[1:10,]})
+  # 
+  # output$provinceBarPlot <- renderPlot({
+  #   
+  #   p <- ggplot(get_province_bar_data(),
+  #               aes(x = geo, y = mom_pct)) +
+  #     geom_bar(stat = "identity") +
+  #     geom_hline(yintercept = 0) +
+  #     geom_vline(xintercept = 2.5) +
+  #     labs(x = NULL,
+  #          y = "% Change",
+  #          title = "By Province") +
+  #     bcstats_chart_theme
+  #   
+  #   print(p)
+  # })
+  # 
+  
+  get_province_line_data = reactive({
+    
+    prov_line_chart <- provinces %>%
+      filter(geo == input$geo) %>%
+      mutate(value = value/1000000) %>% 
+      mutate(ref_date = as.Date(ref_date))
+    
+    prov_line_chart
+    
+  })
+  
+  output$provinceLineTable <- renderTable({get_province_line_data()[1:10,]})
+  
+  
+  
+  
+  output$provinceLinePlot <- renderPlot({
+    
+    p <- ggplot(get_province_line_data(),
+                aes(x = ref_date, y = value)) +
+      geom_line() +
+      labs(x = NULL,
+           y = "Billions of Dollars",
+           title = paste("For",input$geo)) +
+      bcstats_chart_theme +
+      scale_x_date(
+        limits = c(max(as.Date(get_province_line_data()$ref_date)) - years(5),
+                              max(as.Date(get_province_line_data()$ref_date)) + months(3)),
+                   expand = c(0,0),
+                   date_breaks = "6 months",
+                   date_labels = "%b\n%Y" )
+    
+    print(p)
+  })
+  
+  
+  
+}
+
+shinyApp(ui, server)
 ```
 
-![Screenshot showing the Terminal tab of RStudio with the command to create a Quarto project.](images/create-quarto-r-shiny-live-project.png)
 
-While creating the project, you'll be prompted to specify a directory name. This name will also serve as the filename for your Quarto document. It's crucial to note that skipping this step will result in the absence of a `_quarto.yml` file, leading to an error when you attempt to render the document. The error message will resemble the following:
 
-```md
-ERROR:
-The shinylive extension must be used in a Quarto project directory
-(with a _quarto.yml file).
-```
 
-Ensure that the contents of the `_quarto.yml` file match the following structure:
 
-```yaml
-project:
-  title: "R-shinylive-demo"
-```
 
-Here, the `title` field should contain the name of the Quarto file up to the extension.
 
-## Installing the Quarto Extension for r-shinylive
 
-**Step 3:** Install the Quarto extension for `shinylive`. In the Terminal tab, run the following command:
 
-```sh
-quarto add quarto-ext/shinylive
-```
-
-![Screenshot showing the Terminal tab of RStudio with the Quarto Extension installation command.](images/install-shinylive-in-terminal.png)
-
-## Including the Shiny App in Your Quarto Document
-
-**Step 4:** To include a Shiny app directly in your Quarto file (`.qmd`), you need to add a filter key for `shinylive` at the top of the desired Quarto file. Open your Quarto file and add the following YAML header:
-
-```yaml
-filters:
-  - shinylive
-```
-
-**Step 5:** You can insert the code for a Shiny application in a code block marked with `{shinylive-r}`. Below is a skeletal example of how your code block might look:
+Full Skeletal Document Source: 
 
 ````md
 ---
-title: "Our first r-shinylive Quarto document!"
+title: "Template for r-shinylive Quarto document"
+format:
+  html:
+    resources: 
+      - shinylive-sw.js
 filters:
   - shinylive
 ---
@@ -176,259 +458,155 @@ filters:
 #| standalone: true
 
 library(shiny)
+library(ggplot2)
+library(dplyr)
+library(stringr)
+library(lubridate)
 
-# Define your Shiny UI here
+# data_url = "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv"
+data_url = "https://raw.githubusercontent.com/jonjunduan/r-shinylive-demo/main/data/provinces.csv"
+provinces = read.csv(data_url)
+
+mydate <- provinces %>%
+  filter(as.Date(ref_date) %in% as.Date(c((max(as.Date(ref_date)) - lubridate::years(1)):max(as.Date(ref_date))))) %>%
+  select(ref_date) %>%
+  unique() %>%
+  arrange(desc(ref_date)) %>%
+  pull()
+
+
+mygeos <- provinces %>%
+  select(geo) %>%
+  unique() %>%
+  pull()
+
+bcstats_chart_theme <-
+  theme_bw() +
+  theme(
+    panel.border = element_rect(colour="white"),
+    plot.title = element_text(face="bold"),
+    legend.position=c(1,0),
+    legend.justification=c(1,0),
+    legend.title = element_text(size=12),
+    legend.text = element_text(size=11),
+    axis.line = element_line(colour="black"),
+    axis.title = element_text(size=12),
+    axis.text = element_text(size=10)
+  )
+
+
+#Define UI
 ui <- fluidPage(
-  # Your UI components go here
+  
+  # Application title
+  titlePanel("BC Retail and Trade"),
+  
+  # Sidebar with a slider input for selecting species
+  sidebarLayout(
+    sidebarPanel(
+      
+      selectInput(
+        inputId = "date",
+        label = NULL,
+        choices = mydate,
+        selectize = FALSE,
+        size = 3
+      ),
+      
+      selectInput(
+        inputId = "geo",
+        label = NULL,
+        choices = mygeos,
+        selected = "British Columbia"
+      )
+      
+    ),
+    
+    # Show a plot of the generated distribution
+    mainPanel(
+      
+      plotOutput("provinceBarPlot"),
+      tableOutput("provinceBarTable"),
+      plotOutput("provinceLinePlot"),
+      tableOutput("provinceLineTable")
+    )
+  )
+  
 )
 
-# Define your Shiny server logic here
-server <- function(input, output, session) {
-  # Your server code goes here
+server <- function(input, output, session){
+  
+  get_province_bar_data = reactive({
+    prov_bar_chart <- provinces %>%
+      filter(ref_date == input$date) %>%
+      mutate(order = case_when(geo == "British Columbia" ~ 1,
+                               geo == "Canada" ~ 2,
+                               TRUE ~ rank(desc(mom_pct)) + 2),
+             geo = str_replace_all(geo, " ", "\n")) %>%
+      arrange(order) %>%
+      mutate(geo = factor(geo, levels = geo))
+    
+    prov_bar_chart
+    
+  })
+  
+  output$provinceBarTable <- renderTable({get_province_bar_data()[1:10,]})
+  
+  output$provinceBarPlot <- renderPlot({
+    
+    p <- ggplot(get_province_bar_data(),
+                aes(x = geo, y = mom_pct)) +
+      geom_bar(stat = "identity") +
+      geom_hline(yintercept = 0) +
+      geom_vline(xintercept = 2.5) +
+      labs(x = NULL,
+           y = "% Change",
+           title = "By Province") +
+      bcstats_chart_theme
+    
+    print(p)
+  })
+  
+  
+  get_province_line_data = reactive({
+    
+    prov_line_chart <- provinces %>%
+      filter(geo == input$geo) %>%
+      mutate(value = value/1000000) %>% 
+      mutate(ref_date = as.Date(ref_date))
+    
+    prov_line_chart
+    
+  })
+  
+  output$provinceLineTable <- renderTable({get_province_line_data()[1:10,]})
+  
+  
+  
+  
+  output$provinceLinePlot <- renderPlot({
+    
+    p <- ggplot(get_province_line_data(),
+                aes(x = ref_date, y = value)) +
+      geom_line() +
+      labs(x = NULL,
+           y = "Billions of Dollars",
+           title = paste("For",input$geo)) +
+      bcstats_chart_theme +
+      scale_x_date(
+        limits = c(max(as.Date(get_province_line_data()$ref_date)) - years(5),
+                              max(as.Date(get_province_line_data()$ref_date)) + months(3)),
+                   expand = c(0,0),
+                   date_breaks = "6 months",
+                   date_labels = "%b\n%Y" )
+    
+    print(p)
+  })
+  
+  
+  
 }
 
-# Create and launch the Shiny app
 shinyApp(ui, server)
 ```
 ````
-
-Please note that the code block must include `#| standalone: true`, which indicates that the code represents a complete standalone Shiny application. In the future, Quarto will hopefully support Shiny applications with parts spread throughout the document. 
-
-For an example file, you can refer to this bare-bones implementation: [template-r-shinylive.qmd](https://github.com/coatless-quarto/r-shinylive-demo/blob/main/template-r-shinylive.qmd)
-
-
-With this in mind, let's use Joe's shiny app inside our code block. So, we'll end up using:
-
-````md
-```{shinylive-r}
-#| standalone: true
-#| viewerHeight: 600
-library(shiny)
-library(bslib)
-
-# Define UI for app that draws a histogram ----
-ui <- page_sidebar(
-  sidebar = sidebar(open = "open",
-    numericInput("n", "Sample count", 100),
-    checkboxInput("pause", "Pause", FALSE),
-  ),
-  plotOutput("plot", width=1100)
-)
-
-server <- function(input, output, session) {
-  data <- reactive({
-    input$resample
-    if (!isTRUE(input$pause)) {
-      invalidateLater(1000)
-    }
-    rnorm(input$n)
-  })
-  
-  output$plot <- renderPlot({
-    hist(data(),
-      breaks = 40,
-      xlim = c(-2, 2),
-      ylim = c(0, 1),
-      lty = "blank",
-      xlab = "value",
-      freq = FALSE,
-      main = ""
-    )
-    
-    x <- seq(from = -2, to = 2, length.out = 500)
-    y <- dnorm(x)
-    lines(x, y, lwd=1.5)
-    
-    lwd <- 5
-    abline(v=0, col="red", lwd=lwd, lty=2)
-    abline(v=mean(data()), col="blue", lwd=lwd, lty=1)
-
-    legend(legend = c("Normal", "Mean", "Sample mean"),
-      col = c("black", "red", "blue"),
-      lty = c(1, 2, 1),
-      lwd = c(1, lwd, lwd),
-      x = 1,
-      y = 0.9
-    )
-  }, res=140)
-}
-
-# Create Shiny app ----
-shinyApp(ui = ui, server = server)
-```
-````
-
-You can view a standalone version of Joe's app here: [R-shinylive-demo.qmd](https://github.com/coatless-quarto/r-shinylive-demo/blob/main/R-shinylive-demo.qmd)
-
-## Rendering Your Quarto Document
-
-**Step 6:** Once you are satisfied with your Shiny app and content, render the document by pressing the Render button in RStudio.
-
-![Press the render button in RStudio](images/rstudio-render-button.png)
-
-Or type in the Terminal tab:
-
-```sh
-quarto preview R-shinylive-demo.qmd --no-browser --no-watch-inputs
-```
-
-
-## Folder Structure
-
-During the render process, the output directory should contain the following structure:
-
-```sh
-.
-├── _extensions
-│   └── quarto-ext/shinylive # Added by 'quarto add'
-├── _quarto.yml              # Created by 'quarto create'
-├── R-shinylive-demo.html    # Rendered Document
-├── R-shinylive-demo.qmd     # Quarto Document with Shiny App
-├── R-shinylive-demo_files   # Supporting files
-└── shinylive-sw.js          # Service Worker
-```
-
-## Publishing Your Quarto Document
-
-**Step 7:** Once you are satisfied with your shinylive app and Quarto document, it's time to publish your work. There are multiple options for publishing with Quarto, and we'll present two of them. Choose the option that best suits your needs for sharing and distributing your Quarto document with your embedded shinylive app.
-
-**Option 1: Publish to GitHub Pages**
-
-To make your Quarto document accessible on [GitHub Pages via Quarto](https://quarto.org/docs/publishing/github-pages.html), use the following command in your terminal:
-
-```sh
-quarto publish gh-pages
-```
-
-This option is great if you want to share your document through a GitHub Pages website.
-
-**Option 2: Publish to Quarto Pub**
-
-Alternatively, you can publish your Quarto document on [Quarto Pub via Quarto](https://quarto.org/docs/publishing/quarto-pub.html). Use the following command in your terminal:
-
-```sh
-quarto publish quarto-pub
-```
-
-This option provides you with a shareable link for easy access by others and is a good choice if you prefer a dedicated platform for your documents.
-
-### A Quick Fix for Service Worker Inclusion
-
-If you've encountered issues with the `quarto publish` command not including the required service worker JavaScript file, you can quickly resolve this by adding the following lines under the `html` key in your document header:
-
-```yaml
-format:
-  html:
-    resources: 
-      - shinylive-sw.js
-```
-
-This addition ensures that the necessary service worker JavaScript file (`shinylive-sw.js`) is included when you publish your Quarto document. The Quarto team is aware of the issue regarding [service workers not being uploaded automatically from extensions](https://github.com/quarto-dev/quarto-cli/issues/6828).
-
-If you encounter this issue, you may see an error message in your browser's JavaScript console that looks like:
-
-```
-Uncaught Error: ServiceWorker controller was not found!
-The above error occurred in the <Viewer> component:
-```
-
-By implementing this quick fix, you can prevent this error and ensure the proper functioning of your shinylive app within your Quarto document.
-
-## Advanced (Optional Step): Continuous Publishing Using GitHub Actions
-
-For advanced users, you can set up continuous integration (CI) to automatically update your application whenever changes are committed to the Quarto document. This process involves creating a workflow for [GitHub Actions](https://github.com/features/actions) and utilizing actions from [`r-lib/actions`](https://github.com/r-lib/actions) (for R installation) and [`quarto-dev/quarto-actions`](https://github.com/quarto-dev/quarto-actions) (for Quarto setup and publishing).
-
-Follow these steps to configure continuous publishing:
-
-**Step 1:** Create a `.github/` folder in your repository if it doesn't already exist. Place the `workflows/` folder inside it. Then, create a workflow configuration file called `publish-website.yml` with the following content:
-
-```yaml
-on:
-  push:
-    branches: [main, master]
-  release:
-      types: [published]
-  workflow_dispatch: {}
-
-name: demo-website
-
-jobs:
-  demo-website:
-    runs-on: ubuntu-latest
-    # Only restrict concurrency for non-PR jobs
-    concurrency:
-      group: quarto-website-${{ github.event_name != 'pull_request' || github.run_id }}
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    steps:
-      - name: "Check out repository"
-        uses: actions/checkout@v4
-
-      # To render using knitr, we need a few more setup steps...
-      # If we didn't want the examples to use `engine: knitr`, we could
-      # skip a few of the setup steps.
-      - name: "Setup pandoc"
-        uses: r-lib/actions/setup-pandoc@v2
-
-      - name: "Setup R"
-        uses: r-lib/actions/setup-r@v2
-
-      - name: "Setup R dependencies for Quarto's knitr engine"
-        uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          packages:
-            cran::shinylive@0.1.1 ## Pin version to ensure consistency
-            any::knitr
-            any::rmarkdown
-            any::downlit
-            any::xml2
-
-      # Back to our regularly scheduled Quarto output
-      - name: "Set up Quarto"
-        uses: quarto-dev/quarto-actions/setup@v2
-
-      # Render the Quarto file
-      - name: "Render working directory"
-        uses: quarto-dev/quarto-actions/render@v2
-
-      # Upload a tar file that will work with GitHub Pages
-      # Make sure to set a retention day to avoid running into a cap
-      # This artifact shouldn't be required after deployment onto pages was a success.
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v2
-        with: 
-          retention-days: 1
-      
-      # Use an Action deploy to push the artifact onto GitHub Pages
-      # This requires the `Action` tab being structured to allow for deployment
-      # instead of using `docs/` or the `gh-pages` branch of the repository
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v2
-```
-
-:::{.callout-note}
-We have pinned the version of `shinylive` package on CRAN to v0.1.1 to ensure
-consistency with the `quarto-ext/shinylive` Quarto extension. 
-:::
-
-**Step 2:** Enable GitHub Pages deployment using GitHub Actions in your
-repository by going to the repository's `Settings` tab, selecting `Pages`, and
-then under the build and deployment section set scource to GitHub Actions. Please
-make sure to also check the **Enforce HTTPS** option.
-
-![Enabling GitHub Pages deployment through GitHub Actions](images/enable-github-pages-deployment-by-github-actions.png)
-
-
-By implementing this advanced setup, your Quarto document with the embedded shinylive app will automatically update whenever changes are pushed to the specified branches or when a release is published. This ensures that your audience always has access to the latest version of your interactive document.
-
-# Fin
-
-Now you have successfully integrated static Shiny apps into your Quarto documents using the `r-shinylive` package. Happy Quarto + r-shinyliving!
-
-## References
-
-- [Shinylive R Package](https://github.com/posit-dev/r-shinylive)
-- [Shinylive Quarto Extension](https://github.com/quarto-ext/shinylive): Static Shiny apps as Quarto code chunks
