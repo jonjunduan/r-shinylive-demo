@@ -1,5 +1,5 @@
 ---
-title: "Template for r-shinylive Quarto document"
+title: "Canada Retail Sale r-shinylive Quarto document"
 format:
   html:
     resources: 
@@ -10,15 +10,96 @@ filters:
 
 :::callout-important
 Please switch `{{shinylive-r}}` to `{shinylive-r}`. We've suppressed this example from running by using `{{}}`.
+
+It is difficult to load data like csv file to shinylive. The only way that works is that load from website and put code chunk into quarto document, so when render the file, it loads the data. 
 :::
 
-```{{shinylive-r}}
+```{shinylive-r}
 #| standalone: true
 
-ui <- ...
+library(shiny)
+library(ggplot2)
+data_url = "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv"
+# data_url = "penguins.csv"
+# data_url = "c:/Users/JDUAN/Downloads/project/r/shinylive/test-csv/penguins.csv"
+penguins = read.csv(data_url)
+penguins_species = as.character(unique(penguins$species))
 
-server <- function(input, output, session) {
-  ...
+bcstats_chart_theme <-
+  theme_bw() +
+  theme(
+    panel.border = element_rect(colour="white"),
+    plot.title = element_text(face="bold"),
+    legend.position=c(1,0),
+    legend.justification=c(1,0),
+    legend.title = element_text(size=12),
+    legend.text = element_text(size=11),
+    axis.line = element_line(colour="black"),
+    axis.title = element_text(size=12),
+    axis.text = element_text(size=10)
+  )
+
+
+#Define UI
+ui <- fluidPage(
+  # tableOutput("table")
+  
+  # Application title
+  titlePanel("Palmer Penguins Data"),
+  
+  # Sidebar with a slider input for selecting species
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("species", "Species:",
+                  choices = c("All", penguins_species),
+                  selected = "All")
+      
+      # selectInput(
+      #   inputId = "date",
+      #   label = NULL,
+      #   choices = mydate,
+      #   selectize = FALSE,
+      #   size = 3
+      # )
+    ),
+    
+    # Show a plot of the generated distribution
+    mainPanel(
+      plotOutput("penguinPlot"),
+      tableOutput("penguinsTable")
+    )
+  )
+  
+)
+
+server <- function(input, output, session){
+  
+  data = reactive({
+    # # Filter data based on species selection
+    if (input$species == "All") {
+      data <- penguins
+    } else {
+      data <- penguins[penguins$species == input$species, ]
+    }
+    
+    data
+    
+  })
+  
+  output$penguinsTable <- renderTable({data()[1:10,]})
+  output$penguinPlot <- renderPlot({
+    
+    
+    #
+    # # Create ggplot
+    ggplot(data(), aes(x = bill_length_mm, y = body_mass_g)) +
+      geom_point(aes(color = species)) +
+      labs(title = "Flipper Length vs Body Mass",
+           x = "Bill Length (mm)",
+           y = "Body Mass (g)") +
+      bcstats_chart_theme
+    
+  })
 }
 
 shinyApp(ui, server)
@@ -40,10 +121,89 @@ filters:
 ```{shinylive-r}
 #| standalone: true
 
-ui <- ...
+library(shiny)
+library(ggplot2)
+data_url = "https://raw.githubusercontent.com/mwaskom/seaborn-data/master/penguins.csv"
+# data_url = "penguins.csv"
+# data_url = "c:/Users/JDUAN/Downloads/project/r/shinylive/test-csv/penguins.csv"
+penguins = read.csv(data_url)
+penguins_species = as.character(unique(penguins$species))
 
-server <- function(input, output, session) {
-  ...
+bcstats_chart_theme <-
+  theme_bw() +
+  theme(
+    panel.border = element_rect(colour="white"),
+    plot.title = element_text(face="bold"),
+    legend.position=c(1,0),
+    legend.justification=c(1,0),
+    legend.title = element_text(size=12),
+    legend.text = element_text(size=11),
+    axis.line = element_line(colour="black"),
+    axis.title = element_text(size=12),
+    axis.text = element_text(size=10)
+  )
+
+
+#Define UI
+ui <- fluidPage(
+  # tableOutput("table")
+  
+  # Application title
+  titlePanel("Palmer Penguins Data"),
+  
+  # Sidebar with a slider input for selecting species
+  sidebarLayout(
+    sidebarPanel(
+      selectInput("species", "Species:",
+                  choices = c("All", penguins_species),
+                  selected = "All")
+      
+      # selectInput(
+      #   inputId = "date",
+      #   label = NULL,
+      #   choices = mydate,
+      #   selectize = FALSE,
+      #   size = 3
+      # )
+    ),
+    
+    # Show a plot of the generated distribution
+    mainPanel(
+      plotOutput("penguinPlot"),
+      tableOutput("penguinsTable")
+    )
+  )
+  
+)
+
+server <- function(input, output, session){
+  
+  data = reactive({
+    # # Filter data based on species selection
+    if (input$species == "All") {
+      data <- penguins
+    } else {
+      data <- penguins[penguins$species == input$species, ]
+    }
+    
+    data
+    
+  })
+  
+  output$penguinsTable <- renderTable({data()[1:10,]})
+  output$penguinPlot <- renderPlot({
+    
+    
+    #
+    # # Create ggplot
+    ggplot(data(), aes(x = bill_length_mm, y = body_mass_g)) +
+      geom_point(aes(color = species)) +
+      labs(title = "Flipper Length vs Body Mass",
+           x = "Bill Length (mm)",
+           y = "Body Mass (g)") +
+      bcstats_chart_theme
+    
+  })
 }
 
 shinyApp(ui, server)
